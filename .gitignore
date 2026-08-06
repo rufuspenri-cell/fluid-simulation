@@ -4,3 +4,5 @@ __pycache__/
 *.gif
 *.mp4
 *.png
+fluiddensity.gif 
+velocityfield.png
