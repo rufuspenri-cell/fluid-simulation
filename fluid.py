@@ -1,11 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import constants
+from constants import *
+from solver import *
 
 density = np.zeros((HEIGHT, WIDTH))
 vx = np.zeros((HEIGHT, WIDTH))
 vy = np.zeros((HEIGHT, WIDTH))
+pressure = np.zeros((HEIGHT, WIDTH))
 
 def inject_dye():
 	density[HEIGHT // 2, WIDTH // 2 + 20] = 100
@@ -18,6 +20,9 @@ for y in range(HEIGHT):
 		dy = y - cy
 		vx[y, x] = -strength * dy
 		vy[y,x] = strength * dx
+
+div = compute_divergence(vx, vy)
+pressure = solve_pressure(div)
 
 fig, ax = plt.subplots()
 image = ax.imshow(density, cmap="plasma", vmin=0, vmax=100)
@@ -46,4 +51,11 @@ plt.imshow(div, cmap="coolwarm")
 plt.colorbar(label="Divergence")
 plt.title("Velocity Divergence")
 plt.savefig("divergence.png")
+plt.close()
+
+plt.figure(figsize=(6,6))
+plt.imshow(pressure, cmap="coolwarm")
+plt.colorbar(label="Pressure")
+plt.title("Pressure Field")
+plt.savefig("pressure.png")
 plt.close()

@@ -1,5 +1,5 @@
 import numpy as np
-import constants
+from constants import *
 def sample_density(density, x, y):
         x = max(0, min(x, WIDTH - 1))
         y = max(0, min(y, HEIGHT - 1))
@@ -12,7 +12,6 @@ def sample_density(density, x, y):
         top = (1 - sx) * density[y0, x0] + sx * density[y0, x1]
         bottom = (1 - sx) * density[y1, x0] + sx * density[y1, x1]
         return (1 - sy) * top + sy * bottom
-
 def advect(density, vx, vy, dt):
         new_density = np.zeros_like(density)
         for y in range(HEIGHT):
@@ -36,3 +35,12 @@ def diffuse(density, diffusion):
                         laplacian = (density[y-1, x] + density[y+1, x] + density[y, x-1] + density[y, x+1] - 4 * density[y, x])
                         new_density[y, x] += diffusion * laplacian
                 return new_density
+def solve_pressure(divergence, iterations=50):
+	pressure = np.zeros_like(divergence)
+	for _ in range(iterations):
+		new_pressure = pressure.copy()
+		for y in range(1, HEIGHT - 1):
+			for x in range(1, WIDTH - 1):
+				new_pressure[y, x] = (pressure[y-1, x] + pressure[y+1, x] + pressure[y, x-1] + pressure[y, x+1]- divergence[y, x]) / 4
+		pressure = new_pressure
+	return pressure
