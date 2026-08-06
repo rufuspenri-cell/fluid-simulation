@@ -30,6 +30,9 @@ def advect(density, vx, vy, dt):
 			new_density[y, x] = sample_density(density, old_x, old_y)
 	return new_density
 
+def inject_dye():
+	density[HEIGHT // 2, WIDTH // 2 + 20] = 100
+
 cx = WIDTH / 2
 cy = HEIGHT / 2
 strength = 0.15
@@ -41,13 +44,14 @@ for y in range(HEIGHT):
 		vy[y,x] = strength * dx
 
 dt = 1.0
-density[HEIGHT // 2, WIDTH // 2 + 20] = 100
 
 fig, ax = plt.subplots()
 image = ax.imshow(density, cmap="plasma", vmin=0, vmax=100)
 ax.set_title("Fluid Density")
 def update(frame):
 	global density
+	inject_dye()
+	density *= 0.995
 	density = advect(density, vx, vy, dt)
 	image.set_array(density)
 	return image,
