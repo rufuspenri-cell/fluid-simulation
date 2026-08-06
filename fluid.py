@@ -42,17 +42,26 @@ for y in range(HEIGHT):
 		dy = y - cy
 		vx[y, x] = -strength * dy
 		vy[y,x] = strength * dx
-
+DIFFUSION = 0.05
 dt = 1.0
 
 fig, ax = plt.subplots()
 image = ax.imshow(density, cmap="plasma", vmin=0, vmax=100)
 ax.set_title("Fluid Density")
+def diffuse(density, diffusion):
+	new_density = density.copy()
+	for y in range(1, HEIGHT - 1):
+		for x in range(1, WIDTH - 1):
+			laplacian = (density[y-1, x] + density[y+1, x] + density[y, x-1] + density[y, x+1] - 4 * density[y, x])
+			new_density[y, x] += diffusion * laplacian
+		return new_density
+
 def update(frame):
 	global density
 	inject_dye()
 	density *= 0.995
 	density = advect(density, vx, vy, dt)
+	density = diffuse(density, DIFFUSION)
 	image.set_array(density)
 	return image,
 animation = FuncAnimation(fig, update, frames=200, interval=40, blit=True)
