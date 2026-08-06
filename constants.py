@@ -1,0 +1,5 @@
+WIDTH = 100
+HEIGHT = 100
+strength = 0.15
+DIFFUSION = 0.05
+dt = 1.0
