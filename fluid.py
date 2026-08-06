@@ -48,6 +48,14 @@ dt = 1.0
 fig, ax = plt.subplots()
 image = ax.imshow(density, cmap="plasma", vmin=0, vmax=100)
 ax.set_title("Fluid Density")
+def compute_divergence(vx, vy):
+	divergence = np.zeros((HEIGHT, WIDTH))
+	for y in range(1, HEIGHT - 1):
+		for x in range(1, WIDTH - 1):
+			dudx = (vx[y, x + 1] - vx[y, x - 1]) / 2
+			dvdy = (vy[y + 1, x] - vy[y - 1, x]) / 2
+			divergence[y, x] = dudx + dvdy
+	return divergence
 def diffuse(density, diffusion):
 	new_density = density.copy()
 	for y in range(1, HEIGHT - 1):
@@ -55,7 +63,6 @@ def diffuse(density, diffusion):
 			laplacian = (density[y-1, x] + density[y+1, x] + density[y, x-1] + density[y, x+1] - 4 * density[y, x])
 			new_density[y, x] += diffusion * laplacian
 		return new_density
-
 def update(frame):
 	global density
 	inject_dye()
@@ -67,3 +74,17 @@ def update(frame):
 animation = FuncAnimation(fig, update, frames=200, interval=40, blit=True)
 animation.save("fluiddensity.gif", writer="pillow", fps=20)
 plt.close(fig)
+
+plt.figure(figsize=(6, 6))
+skip = 5
+plt.quiver(vx[::skip, ::skip], vy[::skip, ::skip])
+plt.title("Velocity Fiewld")
+plt.savefig("velocity_field.png")
+plt.close()
+
+div = compute_divergence(vx, vy)
+plt.imshow(div, cmap="coolwarm")
+plt.colorbar(label="Divergence")
+plt.title("Velocity Divergence")
+plt.savefig("divergence.png")
+plt.close()
