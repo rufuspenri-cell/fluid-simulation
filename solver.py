@@ -44,3 +44,13 @@ def solve_pressure(divergence, iterations=50):
 				new_pressure[y, x] = (pressure[y-1, x] + pressure[y+1, x] + pressure[y, x-1] + pressure[y, x+1]- divergence[y, x]) / 4
 		pressure = new_pressure
 	return pressure
+def project_velocity(vx, vy, pressure):
+	new_vx = vx.copy()
+	new_vy = vy.copy
+	for y in range(1, HEIGHT - 1):
+		for x in range(1, WIDTH - 1):
+			dpdx = (pressure[y, x + 1] - pressure[y, x - 1]) / 2
+			dpdy = (pressure[y + 1, x] - pressure[y - 1, x]) / 2
+			new_vx[y, x] -= dpdx
+			new_vy[y, x] -= dpdy
+	return new_vx, new_vy

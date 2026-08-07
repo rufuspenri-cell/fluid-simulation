@@ -33,6 +33,9 @@ def update(frame):
 	density *= 0.995
 	density = advect(density, vx, vy, dt)
 	density = diffuse(density, DIFFUSION)
+	divergence = compute_divergence(vx, vy)
+	pressure = solve_pressure(divergence)
+	vx, vy = project_velocity(vx, vy, pressure)
 	image.set_array(density)
 	return image,
 animation = FuncAnimation(fig, update, frames=200, interval=40, blit=True)
