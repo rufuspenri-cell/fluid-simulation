@@ -1,4 +1,4 @@
-WIDTH = 100
+WIDTH = 200
 HEIGHT = 100
 strength = 0.15
 DIFFUSION = 0.05
