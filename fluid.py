@@ -43,6 +43,7 @@ def update(frame):
 	density = advect_scalar(density, vx, vy, dt, obstacle)
 	density = diffuse(density, DIFFUSION)
 	vx, vy = advect_velocity(vx, vy, dt, obstacle)
+	vx, vy = diffuse_velocity(vx, vy, VISCOSITY)
 	divergence = compute_divergence(vx, vy)
 	pressure = solve_pressure(divergence)
 	vx, vy = project_velocity(vx, vy, pressure, obstacle)

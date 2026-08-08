@@ -3,3 +3,4 @@ HEIGHT = 100
 strength = 0.15
 DIFFUSION = 0.05
 dt = 1.0
+VISCOSITY = 0.01

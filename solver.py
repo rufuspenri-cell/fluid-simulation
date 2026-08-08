@@ -73,3 +73,7 @@ def wind_tunnel(vx, vy, density, obstacle):
 	vy[0, :] = 0.0
 	vy[-1, :] = 0.0
 	return vx, vy, density
+def diffuse_velocity(vx, vy, viscosity):
+	new_vx = diffuse(vx, viscosity)
+	new_vy = diffuse(vy, viscosity)
+	return new_vx, new_vy
