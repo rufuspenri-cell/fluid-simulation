@@ -5,21 +5,25 @@ from constants import *
 from solver import *
 import time
 
-fluid = np.zeros((HEIGHT, WIDTH))
-vx = np.zeros((HEIGHT, WIDTH))
-vy = np.zeros((HEIGHT, WIDTH))
+field = np.zeros((HEIGHT, WIDTH))
 pressure = np.zeros((HEIGHT, WIDTH))
 obstacle = np.zeros((HEIGHT, WIDTH), dtype = bool)
+u = np.zeros((HEIGHT, WIDTH +1))
+v = np.zeros((HEIGHT +1, WIDTH))
 
 def inject_dye():
 	field[:, 2] = 20
 
-vx[:, :] = INLET_VELOCITY
-vy[: ,:] = 0.0
+u[:, :] = INLET_VELOCITY
+v[: ,:] = 0.0
 
-obstacle_x = WIDTH // 3
+obstacle_x = WIDTH // 5
 obstacle_y = HEIGHT // 2
-radius = 10
+radius = 8
+Y, X = np.meshgrid(np.arange(HEIGHT), np.arange(WIDTH), indexing="ij")
+dx = X - obstacle_x
+dy = Y - obstacle_y
+obstacle = dx**2 + dy**2 <= radius**2
 
 for y in range(HEIGHT):
 	for x in range(WIDTH):
@@ -28,38 +32,35 @@ for y in range(HEIGHT):
 		if dx**2 + dy**2 <= radius**2:
 			obstacle[y, x] = True
 
-start = tim.perf_counter()
+start = time.perf_counter()
 fig, ax = plt.subplots()
-image = ax.imshow(pressure, cmap="coolwarm", vmin=0, vmax=25)
+image = ax.imshow(field, cmap="coolwarm", vmin=0, vmax=30)
 ax.contour(obstacle, levels=[0.5], colors="white", linewidths=2)
 ax.set_title("Fluid Simulation")
 def update(frame):
-	global field, vx, vy, pressure
+	global field, u, v, pressure
 	inject_dye()
-	field = advect_scalar(field, vx, vy, dt, obstacle)
+	uc, vc = cell_centre_velocity(u, v)
+	field = advect_scalar(field, uc, vc, dt, obstacle)
 	field = diffuse(field, DIFFUSION)
-	vx, vy = advect_velocity(vx, vy, dt, obstacle)
-	vx, vy = diffuse_velocity(vx, vy, VISCOSITY)
-	divergence = compute_divergence(vx, vy)
-	pressure = solve_pressure(divergence)
-	vx, vy = project_velocity(vx, vy, pressure, obstacle)
-	vx, vy, field = wind_tunnel(vx, vy, field, obstacle)
+	u, v = advect_velocity(u, v, dt, obstacle)
+	u, v = diffuse_velocity(u, v, VISCOSITY)
+	divergence = compute_divergence(u, v)
+	pressure = solve_pressure(divergence, obstacle, iterations=500)
+	u, v = project_velocity(u, v, pressure, obstacle)
+	_, _, field = wind_tunnel(u, v, field, obstacle)
+	div_after_boundary = compute_divergence(u, v)
+	max_pos = np.unravel_index(np.argmax(np.abs(div_after_boundary)), div_after_boundary.shape)
+	print("Maximum divergence position:", max_pos)
 	image.set_array(field)
 	return image,
-animation = FuncAnimation(fig, update, frames=300, interval=40, blit=True)
+animation = FuncAnimation(fig, update, frames=400, interval=60, blit=True)
 animation.save("fluid.mp4", writer="ffmpeg", fps=20)
 plt.close(fig)
 end = time.perf_counter()
 print(f"Simulation time: {end - start:.2f} seconds")
 
-plt.figure(figsize=(6, 6))
-skip = 5
-plt.quiver(vx[::skip, ::skip], vy[::skip, ::skip])
-plt.title("Velocity Field")
-plt.savefig("velocity_field.png")
-plt.close()
-
-div = compute_divergence(vx, vy)
+div = compute_divergence(u, v)
 plt.imshow(div, cmap="coolwarm")
 plt.colorbar(label="Divergence")
 plt.title("Velocity Divergence")
